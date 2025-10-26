@@ -73,7 +73,7 @@ motorbike-pinn/
 ├─ data/
 │  └─ VTK/                      # OpenFOAM exported data
 ├─ models/
-│  └─ openfoam_pinn.pt         # trained PINN weights
+│  └─ motorbike_pinn_weights.pt         # trained PINN weights
 ├─ src/
 │  ├─ openfoam_pinn.py         # training script
 │  └─ predictopenfoam_pinn.py                # inference script
@@ -85,6 +85,9 @@ motorbike-pinn/
 ### Credits
 
 - **OpenFOAM motorBike** case (steady, `simpleFoam`)  
-- **PyTorch**, **PyVista**, **MeshIO**  
+- **PyTorch**, **PyVista**, **MeshIO**, **HacktoberFest**
 - Developed for research on **Physics-Informed Neural Networks (PINNs)** for CFD surrogate modeling.
 
+## License
+
+This project is licensed under the MIT License
