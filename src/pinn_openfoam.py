@@ -20,11 +20,11 @@ import torch.nn as nn
 from typing import Tuple
 
 # -------------------- USER CONSTANTS --------------------
-EPOCHS     = 1000
-BATCH_COLL = 50_000
-BATCH_DATA = 200_000
-LR         = 1e-3
-DEVICE     = None        # None -> auto, or "cuda"/"cpu"
+EPOCHS     = 800                # was 100
+BATCH_COLL = 150_000            # was 5_000
+BATCH_DATA = 80_000             # was 10_000
+LR         = 5e-4
+DEVICE     = "cuda"
 
 # Physical / scaling constants
 U_INF  = 30.0    # m/s, free-stream
@@ -94,16 +94,35 @@ def ns_residuals(model: nn.Module, x: torch.Tensor, rho: float = 1.0, nu_eff: fl
 # -------------------- Data loading --------------------
 def load_vtk(volume_path: str):
     grid = pv.read(volume_path)
-    pts = np.asarray(grid.points, dtype=np.float32)
-    if "U" not in grid.point_data:
-        raise KeyError("Field 'U' not found in VTK")
-    U = np.asarray(grid["U"], dtype=np.float32)
-    if "p" in grid.point_data:
-        P = np.asarray(grid["p"], dtype=np.float32).reshape(-1, 1)
+
+    # If fields are cell-centered, convert them to point-centered
+    g = grid
+    needs_convert = ("U" in g.cell_data) or ("p" in g.cell_data)
+    if needs_convert:
+        # This interpolates cell_data onto points so lengths match g.points
+        g = g.cell_data_to_point_data(pass_cell_data=False)
+
+    pts = np.asarray(g.points, dtype=np.float32)
+
+    # Pull strictly from POINT data now
+    if "U" not in g.point_data:
+        raise KeyError("Field 'U' not found in point_data (after conversion)")
+
+    U = np.asarray(g.point_data["U"], dtype=np.float32)
+
+    if "p" in g.point_data:
+        P = np.asarray(g.point_data["p"], dtype=np.float32).reshape(-1, 1)
     else:
-        print("[warn] 'p' not found in VTK; filling with zeros")
+        print("[warn] 'p' not found in point_data; filling zeros")
         P = np.zeros((pts.shape[0], 1), dtype=np.float32)
+
+    # Final sanity: make sure lengths match
+    n = pts.shape[0]
+    if (U.shape[0] != n) or (P.shape[0] != n):
+        raise ValueError(f"Length mismatch after conversion: pts={n}, U={U.shape[0]}, P={P.shape[0]}")
+
     return pts, U, P
+
 
 # -------------------- Training loop --------------------
 def train(volume_path: str):

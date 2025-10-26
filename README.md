@@ -3,7 +3,7 @@ PINNs on Openfoam for hacktoberfest 2025.
 
 # 🏍️ Motorbike PINN (Physics-Informed Neural Network)
 
-A physics-informed neural network (PINN) surrogate model trained on the OpenFOAM **motorBike** case.  
+A physics-informed neural network (PINN) surrogate model trained on the OpenFOAM **motorBikeSteady** case.  
 The network learns the steady-state incompressible Navier–Stokes solution and predicts velocity and pressure fields `(u, v, w, p)` directly from spatial coordinates.
 
 ---
@@ -15,18 +15,17 @@ Clone the repository and run the prediction script using your trained model:
 ```bash
 # 1. Clone the repository
 git clone https://github.com/<your-username>/motorbike-pinn.git
-cd motorbike-pinn/src
 
-# 2. Train your model. We suggest using g5.2xlarge or c7i.4xlarge AWS instances
+# 2. Train your model. Here, I used Nvidia B200 as part of the GPU Mode IRL 2025 San Francisco Hackathon.
 # Will create the models/motorbike_pinn.pt for weights and step 3
 cd src
-python3 openfoam_pinn.py --vtk ../data/VTK/motorBikeSteady_500.vtk
+python3 src/openfoam_pinn.py --vtk /data/VTK/motorBikeSteady_500.vtk
 
 # 3. Run inference on the motorbike case
-python3 predict.py --vtk ../data/VTK/motorBikeSteady_500.vtk \
-                   --weights ../models/motorbike_pinn.pt \
-                   --out-csv ../data/predictions/pred_points.csv \
-                   --out-vtk ../data/predictions/pred_points.vtp
+python3 predict.py --vtk /data/VTK/motorBikeSteady_500.vtk \
+                   --weights /models/motorbike_pinn.pt \
+                   --out-csv /data/predictions/pred_points.csv \
+                   --out-vtk /data/predictions/pred_points.vtp
 ```
 
 
